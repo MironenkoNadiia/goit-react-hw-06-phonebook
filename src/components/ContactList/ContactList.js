@@ -6,25 +6,35 @@ import style from "./contactList.module.css";
 function ContactList({ contacts, onContactDelete }) {
   return (
     <TransitionGroup component="ul" className={style.list}>
-      {contacts.map((contact) => {
-        const { name, number, id } = contact;
-        return (
-          <CSSTransition key={id} timeout={250} classNames={style}>
-            <li className={style.listItem}>
-              <p className={style.listItemName}>
-                {name}: {number}
-              </p>
-              <button
-                className={style.deleteButton}
-                type="button"
-                onClick={() => onContactDelete(id)}
-              >
-                Delete
-              </button>
-            </li>
-          </CSSTransition>
-        );
-      })}
+      {contacts.length === 0 ? (
+        <CSSTransition
+          key={1}
+          timeout={700}
+          classNames="message-empty"
+          unmountOnExit
+        >
+          <li>Contact list empty for now</li>
+        </CSSTransition>
+      ) : (
+        contacts.map(({ name, number, id }) => {
+          return (
+            <CSSTransition key={id} timeout={250} classNames={style}>
+              <li className={style.listItem}>
+                <p className={style.listItemName}>
+                  {name}: {number}
+                </p>
+                <button
+                  className={style.deleteButton}
+                  type="button"
+                  onClick={() => onContactDelete(id)}
+                >
+                  Delete
+                </button>
+              </li>
+            </CSSTransition>
+          );
+        })
+      )}
     </TransitionGroup>
   );
 }
