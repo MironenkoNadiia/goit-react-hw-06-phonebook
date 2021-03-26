@@ -1,12 +1,19 @@
 import React from "react";
-import style from "./message.module.css";
+import PropTypes from "prop-types";
+import s from "./message.module.css";
+import { createPortal } from "react-dom";
 
-function Message() {
-  return (
-    <>
-      <p className={style.swal}>Cant add! Contact already exist!</p>
-    </>
+function Toast({ message }) {
+  return createPortal(
+    <div className={s.container}>
+      <p className={s.message}>{message}</p>
+    </div>,
+    document.querySelector("#toast")
   );
 }
 
-export default Message;
+Toast.propTypes = {
+  message: PropTypes.string,
+};
+
+export default Toast;

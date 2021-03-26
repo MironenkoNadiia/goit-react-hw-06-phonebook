@@ -1,31 +1,43 @@
-import { Component } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import style from "./filter.module.css";
-import shortid from "shortid";
+import { CSSTransition } from "react-transition-group";
+import s from "./filter.module.css";
+import { connect } from "react-redux";
+import { changeFilter } from "../../Phonebook/redux/actions";
 
-export default class Filter extends Component {
-  state = {
-    filter: "",
-  };
-
-  filterInputId = shortid.generate();
-
-  render() {
-    return (
-      <div className={style.wrapper}>
-        <label htmlFor={this.filterInputId}>Find contacts by name:</label>
+function Filter({ value = "", onChangeFilter, items }) {
+  return (
+    <CSSTransition
+      in={items.length > 0}
+      timeout={500}
+      classNames="filter"
+      unmountOnExit
+    >
+      <div>
+        <h3>Find contact by name</h3>
         <input
+          className={s.input}
           type="text"
-          id={this.filterInputId}
-          name="filter"
-          value={this.props.value}
-          onChange={(e) => this.props.onChangeFilter(e.target.value)}
+          value={value}
+          onChange={onChangeFilter}
         />
       </div>
-    );
-  }
+    </CSSTransition>
+  );
 }
 
 Filter.propTypes = {
-  filter: PropTypes.string,
+  value: PropTypes.string,
+  onChangeFilter: PropTypes.func.isRequired,
 };
+
+const mapStateToProps = (state) => ({
+  value: state.contacts.filter,
+  items: state.contacts.items,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  onChangeFilter: (e) => dispatch(changeFilter(e.target.value)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Filter);

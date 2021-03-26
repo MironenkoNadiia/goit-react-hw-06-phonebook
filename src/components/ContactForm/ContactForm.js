@@ -1,76 +1,112 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import style from "./contactForm.module.css";
-import shortid from "shortid";
+import s from "./contactForm.module.css";
+import Toast from "../Message/Message";
+import { CSSTransition } from "react-transition-group";
+import { connect } from "react-redux";
+import { addContact } from "../../Phonebook/redux/actions";
 
-export default class ContactForm extends Component {
+class ContactForm extends Component {
+  static propTypes = {
+    onAddContact: PropTypes.func.isRequired,
+  };
+
   state = {
     name: "",
     number: "",
-    contacts: [],
+    haveError: false,
   };
 
-  nameInputId = shortid.generate();
-  numberInputId = shortid.generate();
-
-  handleChange = (event) => {
-    const { name, value } = event.currentTarget;
-    this.setState({ [name]: value });
+  handleChange = (e) => {
+    this.setState({
+      [e.target.name]: e.target.value,
+    });
   };
 
   handleSubmit = (e) => {
     e.preventDefault();
-    this.props.onSubmit(this.state);
-    this.handleClearState();
-  };
 
-  handleClearState = () => {
+    const { name, number } = this.state;
+
+    if (name === "" || name === "") {
+      this.showToast("Name or number can't be empty string");
+
+      return;
+    }
+
+    if (this.props.contacts.find((item) => item.name === name)) {
+      this.showToast(`${name} is already in contacts`);
+      this.setState({ name: "", number: "" });
+      return;
+    }
+
+    this.props.onAddContact(name, number);
+
     this.setState({ name: "", number: "" });
   };
 
+  showToast = (message) => {
+    this.setState((prev) => ({
+      haveError: !prev.haveError,
+      errorMessage: message,
+    }));
+    setTimeout(() => {
+      this.setState((prev) => ({
+        haveError: !prev.haveError,
+      }));
+    }, 1500);
+  };
+
   render() {
+    const { errorMessage, haveError } = this.state;
+
     return (
-      <div>
-        <form className={style.form} onSubmit={this.handleSubmit}>
-          <label className={style.labelName} htmlFor={this.nameInputId}>
-            Name:
-          </label>
-          <input
-            className={style.inputName}
-            type="text"
-            name="name"
-            value={this.state.name}
-            id={this.nameInputId}
-            onChange={this.handleChange}
-          />
+      <>
+        <CSSTransition
+          in={haveError}
+          timeout={250}
+          classNames="toast"
+          unmountOnExit
+        >
+          <Toast message={errorMessage} />
+        </CSSTransition>
 
-          <label className={style.labelName} htmlFor={this.numberInputId}>
-            Telephone number:
+        <form onSubmit={this.handleSubmit} className={s.form}>
+          <label className={s.label}>
+            Name
+            <input
+              className={s.input}
+              type="text"
+              name="name"
+              value={this.state.name}
+              onChange={this.handleChange}
+            />
           </label>
-          <input
-            className={style.inputName}
-            type="text"
-            name="number"
-            value={this.state.number}
-            id={this.numberInputId}
-            onChange={this.handleChange}
-          />
-
-          <button className={style.buttonAdd} type="submit">
+          <label className={s.label}>
+            Number
+            <input
+              className={s.input}
+              type="text"
+              name="number"
+              value={this.state.number}
+              onChange={this.handleChange}
+            />
+          </label>
+          <button type="submit" className={s.button}>
             Add contact
           </button>
         </form>
-      </div>
+      </>
     );
   }
 }
-ContactForm.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ),
-};
+
+const mapStateToProps = (state) => ({
+  contacts: state.contacts.items,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  onAddContact: (name, phone) => dispatch(addContact(name, phone)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ContactForm);

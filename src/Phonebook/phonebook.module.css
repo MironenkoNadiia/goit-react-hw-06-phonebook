@@ -3,11 +3,11 @@
 }
 
 .title {
-  text-align: left;
+  text-align: center;
 }
 .formSearch {
   padding: 15px;
-  text-align: left;
+  text-align: center;
   border: 1px solid rgb(19, 17, 17);
   width: 350px;
 }
